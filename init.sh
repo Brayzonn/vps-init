@@ -110,7 +110,13 @@ check_os() {
 update_system() {
     log_info "Updating system packages..."
 
-    export DEBIAN_FRONTEND=noninteractive
+     export DEBIAN_FRONTEND=noninteractive
+
+     export NEEDRESTART_MODE=a
+    
+    echo "postfix postfix/main_mailer_type select No configuration" | sudo debconf-set-selections
+    echo "postfix postfix/mailname string localhost" | sudo debconf-set-selections
+
     log_command "sudo apt-get update"
     log_command "sudo apt-get upgrade -y"
     log_command "sudo apt-get install -y curl wget git unzip software-properties-common ca-certificates gnupg lsb-release ufw"
@@ -400,7 +406,7 @@ EOF
 setup_log_monitoring() {
     log_info "Setting up file-based log monitoring with logwatch..."
     
-    log_command "sudo apt-get install -y logwatch"
+    log_command "sudo apt-get install -y --no-install-recommends logwatch"
     
     sudo tee /etc/logwatch/conf/logwatch.conf > /dev/null <<EOF
 LogDir = /var/log
