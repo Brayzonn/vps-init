@@ -741,4 +741,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with love for the DevOps community**
