@@ -2,6 +2,15 @@
 
 An extensible shell script designed to streamline the initial setup of fresh Ubuntu or Debian VPS instances. Ideal for developers who need a reliable, repeatable baseline configuration for app hosting.
 
+## Supported Technologies
+
+### **Supported**
+- **Frontend**: React, Vue.js, Angular, Next.js, Nuxt.js (any npm-based SPA)
+- **Backend**: Node.js/Express, NestJS, Fastify, Koa (any Node.js server)
+- **Full-Stack**: MERN, MEAN, VENM, T3 Stack, Next.js full-stack
+- **Languages**: JavaScript, TypeScript
+- **Databases**: Any (MongoDB, PostgreSQL, MySQL via separate installation)
+
 ## Quick Start (5 Minutes)
 
 **Just want to get a server running fast?** Follow these steps:
@@ -48,15 +57,10 @@ chmod +x init.sh
 
 **What this does**: Installs Node.js, PM2, Nginx, configures security (firewall, fail2ban, SSH keys), sets up automated backups and monitoring.
 
-### 2. Add SSL Certificate  
-```bash
-sudo certbot --nginx -d yourdomain.com
-```
-*Enables HTTPS for your domain*
 
-**Note**: Your domain's DNS must be pointing to your server IP before running this command.
+### 2. Deploy Your App
 
-### 3. Deploy Your App
+**Note: Replace `your-app` with your actual app name(preferably the github repository name) and `yourdomain.com` with your actual domain throughout these commands.**
 
 **For Server Apps (Node.js APIs):**
 ```bash
@@ -74,7 +78,8 @@ git clone https://github.com/yourusername/your-app.git
 cd your-app
 npm ci
 npm run build
-sudo cp -r dist/* /var/www/html/          # or build/* depending on your setup
+sudo mkdir -p /var/www/your-app
+sudo cp -r dist/* /var/www/your-app/        # or build/* depending on your setup
 sudo systemctl reload nginx              
 ```
 
@@ -93,13 +98,189 @@ pm2 start app.js --name "your-app-api"
 cd ../client
 npm ci
 npm run build
-sudo cp -r dist/* /var/www/html/
+sudo mkdir -p /var/www/your-app
+sudo cp -r dist/* /var/www/your-app/
 sudo systemctl reload nginx
 pm2 save
 ```
 *Your app is now running with process management*
 
-### 4. Done! 
+### 3. Configure Nginx for Your App
+
+**For API Apps (Node.js backend):**
+```bash
+# Edit Nginx default configuration
+sudo nano /etc/nginx/sites-available/default
+
+# Add API proxy configuration inside the server block:
+
+location /api {
+    proxy_pass http://localhost:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_cache_bypass $http_upgrade;
+}
+
+# Your final server block should look like:
+# server {
+#     listen 80;
+#     listen [::]:80;
+#     server_name yourdomain.com www.yourdomain.com;
+#     
+#     location /api {
+#         proxy_pass http://localhost:3000;
+#         proxy_http_version 1.1;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection 'upgrade';
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_cache_bypass $http_upgrade;
+#     }
+# }
+
+# Save and exit (Ctrl+X, Y, Enter)
+
+# Test and reload
+sudo nginx -t
+sudo systemctl reload nginx
+```
+**Note**: Replace `yourdomain.com` with your actual domain name and adjust the port (3000) if your Node.js app runs on a different port. Additionally, adjust the /api route path to match your app's routing structure.
+
+
+
+**For Client Apps (React/Vue/Angular):**
+```bash
+sudo nano /etc/nginx/sites-available/default
+
+# to enable proper routing for single-page applications (SPAs):
+location / {
+    try_files $uri $uri/ /index.html;
+    root /var/www/your-app;  # This should match the path where your build files are copied
+    index index.html;
+}
+
+# Then test the Nginx config and reload
+sudo nginx -t
+sudo systemctl reload nginx
+
+```
+
+**For Full-Stack Apps:**
+```bash
+# Configure both API proxy AND SPA routing
+sudo nano /etc/nginx/sites-available/default
+
+# 1. Add API proxy configuration 
+location /api {
+    proxy_pass http://localhost:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_cache_bypass $http_upgrade;
+}
+
+# 2. Update the existing location / block for SPA routing:
+location / {
+    try_files $uri $uri/ /index.html;
+    root /var/www/your-app;  # This should match where your frontend build files are copied
+    index index.html;
+}
+
+# Save and exit (Ctrl+X, Y, Enter)
+
+# Test and reload
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+**Note**: Adjust the API port (3000) if your backend runs on a different port.
+
+**For Multiple Domains:**
+```bash
+# Configure separate server blocks for multiple domains
+sudo nano /etc/nginx/sites-available/default
+
+# Create multiple server blocks - one for each domain:
+
+# Domain 1 - API subdomain
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# Domain 2 - Frontend app
+server {
+    listen 80;
+    listen [::]:80;
+    server_name app.yourdomain.com;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+        root /var/www/your-app;
+        index index.html;
+    }
+}
+
+# Domain 3 - Different app on different domain
+server {
+    listen 80;
+    listen [::]:80;
+    server_name anotherdomain.com www.anotherdomain.com;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+        root /var/www/your-app;
+        index index.html;
+    }
+}
+
+# Save and exit (Ctrl+X, Y, Enter)
+
+# Test and reload
+sudo nginx -t
+sudo systemctl reload nginx
+
+# Don't forget to get SSL certificates for each domain:
+sudo certbot --nginx -d api.yourdomain.com
+sudo certbot --nginx -d app.yourdomain.com  
+sudo certbot --nginx -d anotherdomain.com -d www.anotherdomain.com
+```
+
+**Note**: Each domain needs its own server block with a unique `server_name` directive. Make sure all domains have DNS A records pointing to your server IP before running certbot.
+
+### 4. Add SSL Certificate  
+```bash
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+*Enables HTTPS for your domain*
+
+**Note**: Your domain's DNS must be pointing to your server IP before running this command.
+
+### 5. Done! 
 Your app is now running at `https://yourdomain.com`
 
 **Quick verification**:
@@ -437,56 +618,9 @@ ls -la ~/logs/vps-setup-*.log
 
 ## Post-Installation Steps
 
-### 1. SSL Certificate Setup
-```bash
-# Install SSL certificate for your domain
-sudo certbot --nginx -d yourdomain.com
-```
+**If you followed the [Quick Start](#quick-start-5-minutes), your server is already configured! These steps are for verification.**
 
-### 2. Deploy Your Application
-```bash
-# Clone your application
-git clone https://github.com/yourusername/your-app.git
-cd your-app
-
-# Install dependencies
-npm ci
-
-# Build if needed (TypeScript projects, React/Vue/Angular apps)
-npm run build
-
-# For API projects: Start server with PM2
-pm2 start app.js --name "your-app"
-pm2 save
-
-# For client projects: Deploy built files to nginx
-sudo cp -r dist/* /var/www/html/          # React/Angular
-# OR
-sudo cp -r build/* /var/www/html/         # Some React setups
-sudo systemctl reload nginx
-
-# For full-stack: Deploy both server and client components
-
-# Note: Future releases will include automated webhook deployment that handles these steps automatically on git push.
-```
-
-### 3. Configure Nginx for Your App
-```bash
-# Edit Nginx configuration
-sudo nano /etc/nginx/sites-available/default
-
-# Add proxy configuration for your Node.js app
-# location /api {
-#     proxy_pass http://localhost:3000;
-#     # ... proxy headers
-# }
-
-# Test and reload
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-### 4. Verify Security Setup
+### 1. Verify Security Setup
 ```bash
 # Check firewall status
 sudo ufw status verbose
