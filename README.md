@@ -2,7 +2,7 @@
 
 An extensible shell script designed to streamline the initial setup of fresh Ubuntu or Debian VPS instances. Ideal for developers who need a reliable, repeatable baseline configuration for app hosting.
 
-## 🚀 Quick Start (5 Minutes)
+## Quick Start (5 Minutes)
 
 **Just want to get a server running fast?** Follow these steps:
 
@@ -17,7 +17,8 @@ An extensible shell script designed to streamline the initial setup of fresh Ubu
 
 **Option A: Copy from Local Machine (Recommended)**
 ```bash
-# From your local machine, copy script to server
+# Copy the initialization script from your local machine to your server's home directory
+# Usage: run this from the directory containing init.sh
 scp init.sh user@YOUR_SERVER_IP:/home/user/init.sh
 
 # SSH into your server
@@ -43,7 +44,7 @@ chmod +x init.sh
 ./init.sh
 ```
 
-☕ *Grab coffee - this takes 10-15 minutes*
+☕ *Grab coffee - this takes 7-15 minutes*
 
 **What this does**: Installs Node.js, PM2, Nginx, configures security (firewall, fail2ban, SSH keys), sets up automated backups and monitoring.
 
@@ -357,7 +358,7 @@ FINALIZATION PHASE
 - **Fail Safe**: Script continues with warnings for optional security features
 - **Audit Trail**: Every action is logged for security compliance
 
-## 💻 Usage
+## Usage
 
 ### Basic Usage
 ```bash
@@ -380,7 +381,7 @@ tail -f ~/logs/vps-setup-*.log
 | `LOG_DIR` | `$HOME/logs` | Directory for log files |
 | `DEBIAN_FRONTEND` | `noninteractive` | Prevents package installation prompts |
 
-## ⚙️ Configuration
+## Configuration
 
 ### SSH Key Setup (Required for SSH Hardening)
 ```bash
@@ -500,7 +501,7 @@ ssh -o PreferredAuthentications=publickey username@your-server-ip
 ls -la /opt/backups/
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
