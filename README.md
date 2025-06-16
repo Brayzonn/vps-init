@@ -730,14 +730,6 @@ We welcome contributions! Please follow these guidelines:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- [Node.js](https://nodejs.org/) for the JavaScript runtime
-- [PM2](https://pm2.keymetrics.io/) for process management
-- [Nginx](https://nginx.org/) for web server capabilities
-- [Let's Encrypt](https://letsencrypt.org/) for free SSL certificates
-- [Fail2ban](https://www.fail2ban.org/) for intrusion prevention
-- [Ubuntu](https://ubuntu.com/) and [Debian](https://www.debian.org/) communities
 
 ---
 
