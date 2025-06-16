@@ -32,6 +32,9 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+nextUpdate.sh
+
+
 
 
 

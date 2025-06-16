@@ -1,9 +1,5 @@
 #!/bin/bash
-## VPS Initialization with Enhanced Logging
-
-# Server Setup Script
-# Usage: curl -sSL https://your-domain.com/init.sh | bash
-# or: wget -qO- https://your-domain.com/init.sh | bash
+## VPS Initialization 
 
 #######################################
 # CONFIGURATION
@@ -206,21 +202,6 @@ install_certbot() {
     log_info "Certbot installed. Run 'sudo certbot --nginx -d yourdomain.com' to get SSL certificate"
 }
 
-
-# install_docker() {
-#     log_info "Installing Docker..."
-    
-#     log_command "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
-    
-#     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
-#     log_command "sudo apt-get update"
-#     log_command "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin"
-#     log_command "sudo usermod -aG docker $USER"
-    
-#     log_info "Docker installed. You may need to log out and back in for group changes to take effect"
-# }
-
 #######################################
 # SYSTEM CONFIGURATION & SECURITY
 #######################################
@@ -417,44 +398,33 @@ EOF
 }
 
 setup_log_monitoring() {
-    log_info "Setting up basic log monitoring with logwatch..."
+    log_info "Setting up file-based log monitoring with logwatch..."
     
     log_command "sudo apt-get install -y logwatch"
     
     sudo tee /etc/logwatch/conf/logwatch.conf > /dev/null <<EOF
 LogDir = /var/log
 TmpDir = /var/cache/logwatch
-MailTo = $(whoami)
-MailFrom = logwatch@$(hostname)
+Output = file
+Filename = /var/log/logwatch/daily-report.txt
 Print = Yes
-Save = /var/cache/logwatch
 Range = yesterday
 Detail = Med
 Service = All
-mailer = "/usr/sbin/sendmail -t"
 EOF
 
+    sudo mkdir -p /var/log/logwatch
+    
     sudo tee /etc/cron.daily/00logwatch > /dev/null <<'EOF'
 #!/bin/bash
-/usr/sbin/logwatch --output mail --mailto $(whoami) --detail high
+REPORT_FILE="/var/log/logwatch/daily-report-$(date +%Y%m%d).txt"
+/usr/sbin/logwatch --output file --filename "$REPORT_FILE" --detail high
+# Keep only last 30 days of reports
+find /var/log/logwatch -name "daily-report-*.txt" -mtime +30 -delete
 EOF
 
     sudo chmod +x /etc/cron.daily/00logwatch
-    
-    sudo tee /etc/cron.hourly/disk-space-check > /dev/null <<'EOF'
-#!/bin/bash
-THRESHOLD=90
-DISK_USAGE=$(df / | grep -vE '^Filesystem|tmpfs|cdrom' | awk '{print $5}' | sed 's/%//g')
-if [ "$DISK_USAGE" -gt "$THRESHOLD" ]; then
-    echo "Disk usage is above ${THRESHOLD}%: ${DISK_USAGE}%" | logger -t disk-space-alert
-    # Optionally send email or notification
-fi
-EOF
-
-    sudo chmod +x /etc/cron.hourly/disk-space-check
-    
-    log_info "Log monitoring configured with logwatch"
-    log_info "Daily log reports will be generated"
+    log_info "Daily reports will be saved to /var/log/logwatch/"
 }
 
 setup_backup_system() {
@@ -658,11 +628,9 @@ main() {
     install_nginx
     cleanup_unwanted_services
     install_certbot
-    #install_docker
     
     setup_firewall
     setup_nginx_config
-    
     install_fail2ban
     setup_ssh_key_auth
     setup_auto_updates
