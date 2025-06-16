@@ -74,7 +74,7 @@ cd your-app
 npm ci
 npm run build
 sudo cp -r dist/* /var/www/html/          # or build/* depending on your setup
-sudo systemctl reload nginx              # Only needed if you changed nginx config
+sudo systemctl reload nginx              
 ```
 
 **For Full-Stack Apps:**
