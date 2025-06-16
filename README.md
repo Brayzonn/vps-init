@@ -98,7 +98,7 @@ pm2 save
 ```
 🚀 *Your app is now running with process management*
 
-### 4. Done! 🎉
+### 4. Done! 
 Your app is now running at `https://yourdomain.com`
 
 **Quick verification**:
@@ -595,7 +595,7 @@ We welcome contributions! Please follow these guidelines:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Node.js](https://nodejs.org/) for the JavaScript runtime
 - [PM2](https://pm2.keymetrics.io/) for process management
