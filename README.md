@@ -113,15 +113,15 @@ sudo fail2ban-client status  # Check intrusion prevention
 
 ## Table of Contents
 
-- [Features](#-features)
-- [What Gets Installed](#-what-gets-installed)
-- [Function Documentation](#-function-documentation)
-- [Code Flow](#-code-flow)
-- [Usage](#-usage)
-- [Configuration](#-configuration)
-- [Logging](#-logging)
-- [Post-Installation Steps](#-post-installation-steps)
-- [Troubleshooting](#-troubleshooting)
+- [Features](#features)
+- [What Gets Installed](#what-gets-installed)
+- [Function Documentation](#function-documentation)
+- [Code Flow](#code-flow)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Logging](#logging)
+- [Post-Installation Steps](#post-installation-steps)
+- [Troubleshooting](#troubleshooting)
 
 ## Features
 
