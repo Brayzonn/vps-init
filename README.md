@@ -52,7 +52,7 @@ chmod +x init.sh
 ```bash
 sudo certbot --nginx -d yourdomain.com
 ```
-🔒 *Enables HTTPS for your domain*
+*Enables HTTPS for your domain*
 
 **Note**: Your domain's DNS must be pointing to your server IP before running this command.
 
@@ -97,7 +97,7 @@ sudo cp -r dist/* /var/www/html/
 sudo systemctl reload nginx
 pm2 save
 ```
-🚀 *Your app is now running with process management*
+*Your app is now running with process management*
 
 ### 4. Done! 
 Your app is now running at `https://yourdomain.com`
