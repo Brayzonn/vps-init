@@ -615,6 +615,8 @@ handle_error() {
 }
 
 trap handle_error ERR
+trap 'log_error "Script interrupted by user (Ctrl+C)"; cleanup; exit 130' INT
+
 
 #######################################
 # MAIN EXECUTION
